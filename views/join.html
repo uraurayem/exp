@@ -6,39 +6,100 @@
         <meta name="author" content="mi">
         <title></title>
     </head>
+    <script>
+
+        var User = function () 
+        { 
+           this.username    = "";
+           this.userage     = "";
+           this.userid      = ""; 
+           this.userpwd     = "";
+           this.useraddress = ""; 
+
+           this.validation =function()
+           {
+            // JSON.stringify(user);
+            // 유효성 검사
+            for(var key in this) 
+            {
+                var obj = document.getElementById(key);
+               // var useridObj = document.getElementById("userid") ;
+                if(obj.getAttribute("data-val")) {
+                    var len = obj.getAttribute("data-val").split(",")[0];
+                    var msg = obj.getAttribute("data-val").split(",")[1];
+                    
+                    if ( this[key] < len ) {
+                        alert(msg);
+                        obj.value = ""; 
+                        obj.focus();
+                        return ; 
+                    }
+                    
+                } 
+            }
+
+           }
+        }
+        function login() { 
+            var user = new User();
+/*
+            user.username    = document.getElementById("username").value;
+            user.userage     = document.getElementById("userage").value;
+            user.userid      = document.getElementById("userid").value;
+            user.userpwd     = document.getElementById("userpwd").value;
+            user.useraddress = document.getElementById("useraddress").value;
+            */
+
+            // in : key 값 가져오기
+            // if : values 값 가져오기
+            try {
+
+                for (var key in user ) { 
+                   // console.log("key : " + key  + ", user[key] : " + user[key]);
+                    if(document.getElementById(key))
+                      user[key] = document.getElementById(key).value.trim();
+                    
+                }
+            } catch (e ) {
+                console.log(e);
+            }
+     
+    
+            user.validation();
+        }
+    </script>
+
 
     <body>
-            <form method='get' action='/join2' >
-                <table border='1'> 
-                    <tr> 
-                        <td colspan='2' align='center'>회원가입</td> 
-                    </tr> 
-                
-                    <tr> 
-                        <td>이름 : </td> 
-                        <td><input type='text' name ='username' id='name' /> </td> 
-                    </tr> 
-                    <tr> 
-                        <td>나이 : </td> 
-                        <td><input type='text' name ='userage' id='name' /> </td> 
-                    </tr> 
-                    <tr> 
-                        <td>아이디 : </td> 
-                        <td><input type='text' name ='userid' id='name' /> </td> 
-                    </tr> 
-                    <tr> 
-                        <td>비밀번호 : </td> 
-                        <td><input type='text' name ='userpwd' id='name' /> </td> 
-                    </tr> 
-                    <tr> 
-                        <td>주소 : </td> 
-                        <td><input type='text' name ='useraddress' id='name' /> </td> 
-                    </tr> 
-                    <tr> 
-                       <td colspan='2' align='center'><input type='submit' value='회원가입'> </td> 
-                    </tr> 
-                </table> 
-            </form> 
+            <table border='1'> 
+                <tr> 
+                    <td colspan='2' align='center'>회원가입</td> 
+                </tr> 
+            
+                <tr> 
+                    <td>이름 : </td> 
+                    <td><input type='text' name ='username' id='username' data-val="2,이름 2글자 이상입니다." /> </td> 
+                </tr> 
+                <tr> 
+                    <td>나이 : </td> 
+                    <td><input type='text' name ='userage' id='userage' /> </td> 
+                </tr> 
+                <tr> 
+                    <td>아이디 : </td> 
+                    <td><input type='text' name ='userid' id='userid' data-val="3,아이디 3글자 이상입니다." /> </td> 
+                </tr> 
+                <tr> 
+                    <td>비밀번호 : </td> 
+                    <td><input type='text' name ='userpwd' id='userpwd' /> </td> 
+                </tr> 
+                <tr> 
+                    <td>주소 : </td> 
+                    <td><input type='text' name ='useraddress' id='useraddress' /> </td> 
+                </tr> 
+                <tr> 
+                    <td colspan='2' align='center'><input type='button' value='회원가입' onclick="login()"> </td> 
+                </tr> 
+            </table> 
     </body>
 
 </html>
