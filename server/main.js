@@ -132,10 +132,10 @@ app.post('/api/users',(req,res,next)=>{
         return true;
     }).then(()=>{
         sql = "insert into user_info(";
-        sql += "userId, userName, userPwd)";
+        sql += "userId, userName, userPwd,userAge)";
         sql += "values(?,?,?,?)";
         var pm = req.body;
-        var values = [pm.userId, pm.userName, pm.userPwd];
+        var values = [pm.userId, pm.userName, pm.userPwd , pm.userAge];
         var result = {};
         return connection2(dbConfig).then((con)=>{
             return con.query(sql,values);
