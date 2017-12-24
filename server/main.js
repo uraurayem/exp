@@ -78,9 +78,9 @@ app.get('/api/depart' , (req,res, next) => {
     result["succeed"] = "ok";
     var depart = {} ; 
     depart["dino"] = 3 ;
-    depart["diName"] = "test" ;
-    depart["diDesc"] = "테스트반" ;
-    depart["diCnt"] =2 ;
+    depart["diname"] = "test" ;
+    depart["didesc"] = "테스트반" ;
+    depart["dicnt"] =2 ;
     result["di"] = depart; 
     res.json(result);
 
