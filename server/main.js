@@ -21,6 +21,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(morgan('dev'));
 
+
 var generateWhere = function(paramObj){
     var whereStr = '';
     Object.keys(paramObj).forEach((key)=>{
@@ -62,6 +63,30 @@ app.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Headers','X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
 	next();
 });
+
+/*    ---------------------------------------------------------------------------------------------      */
+
+
+app.get('/api/depart' , (req,res, next) => {
+
+    console.log(req.body.name ) ;
+    console.log(req.body.diname ) ;
+    console.log(req.query.name ) ;
+    console.log(req.query.diname ) ;
+
+    var result = {} ; 
+    result["succeed"] = "ok";
+    var depart = {} ; 
+    depart["dino"] = 3 ;
+    depart["diName"] = "test" ;
+    depart["diDesc"] = "테스트반" ;
+    depart["diCnt"] =2 ;
+    result["di"] = depart; 
+    res.json(result);
+
+    
+} ) ;
+
 app.get('/api/users',(req, res, next)=>{
     var result = {};
     var paramObj = JSON.parse(req.query.user);
@@ -181,6 +206,7 @@ app.post('/api/users',(req, res, next)=>{
         console.log(result);
     });
 })
+
 
 
 app.listen(app.get('port'), function() {
