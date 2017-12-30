@@ -9,6 +9,8 @@ const mysql2 = require('promise-mysql');
 
 var connection = mysql.createConnection(dbConfig);
 var connection2 = mysql2.createConnection;
+const con = mysql2.createConnection(dbConfig);
+
 
 app.set('port', (process.env.PORT || 3000));
 
@@ -40,7 +42,6 @@ var generateWhereValue = function(paramObj){
 
 /*   중요 ..! */
 var errorHandle = (err)=>{
-    console.log(err);
     var result = {};
     result["error"] = {"code" : err.code,
     "no" : err.errno,
@@ -59,7 +60,7 @@ app.use(function(req, res, next) {
 	res.header('X-Frame-Options','SAMEORIGIN');
 	res.header('Access-Control-Allow-Credentials', true);
 	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods','GET,POST');
+	res.header('Access-Control-Allow-Methods','GET,POST, DELETE');
 	res.header('Access-Control-Allow-Headers','X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
 	next();
 });
@@ -69,10 +70,6 @@ app.use(function(req, res, next) {
 
 app.get('/api/depart' , (req,res, next) => {
 
-    console.log(req.body.name ) ;
-    console.log(req.body.diname ) ;
-    console.log(req.query.name ) ;
-    console.log(req.query.diname ) ;
 
     var result = {} ; 
     result["succeed"] = "ok";
@@ -87,25 +84,117 @@ app.get('/api/depart' , (req,res, next) => {
     
 } ) ;
 
+
+app.post('/api/departs' , (req,res, next) => {
+   
+    var obj = req.body ; 
+    var values = [obj.diname , obj.didesc  , obj.dicnt ]; 
+
+    var sql ="insert into depart_info (diname, didesc, dicnt ) values (? , ?, ? )" ;
+    var result = {} ; 
+
+    con.then((con) => { 
+        return con.query(sql, values) ;
+    }).then(rows => {
+
+        console.log(rows);
+       result["succeed"] = "ok"; 
+
+
+        if(rows.affectedRows != 1) {
+            result["succeed"] ="no";
+        }
+
+       res.json(result);
+    }) ; 
+    
+} ) ;
+
+
+
+app.post('/api/departs/update' , (req,res, next) => {
+   
+    var obj = req.body ; 
+    var values = [obj.diname , obj.didesc  , obj.dicnt  , obj.dino]; 
+
+    var sql ="update depart_info set  diName =  ? , diDesc  = ? , diCnt = ? where dino = ? " ;
+    var result = {} ; 
+
+    con.then((con) => { 
+        return con.query(sql, values) ;
+    }).then(rows => {
+
+        console.log(rows);
+       result["succeed"] = "ok"; 
+
+
+        if(rows.affectedRows != 1) {
+            result["succeed"] ="no";
+        }
+
+       res.json(result);
+    }) ; 
+    
+} ) ;
+
+
+app.delete('/api/departs/:diNo' , (req,res, next) => {
+   
+console.log( "express => req dino : " +  req.params.diNo   ) ;
+ var diNo = req.params.diNo;   ;
+     var sql ="delete from depart_info where dino = ? " ;
+    var result = {} ; 
+
+    con.then((con) => { 
+        return con.query(sql, diNo) ;
+    }).then(rows => {
+
+   
+       res.json(rows);
+    }).catch(errorHandle ).then((result)=> {
+
+        res.json(result);
+    });
+     
+} ) ;
+
+app.get('/api/departs' , (req,res, next) => {
+   
+    var sql = "select * from depart_info" ; 
+    con.then((con) => {
+        return con.query(sql) ;
+    }).then(rows => {
+        res.json(rows) ; 
+    });
+    
+} ) ;
+
+app.get('/api/departs/:diNo' , (req,res, next) => {
+   
+    var sql = "select dino, diname, didesc , dicnt  from depart_info where diNo = ? " ; 
+    var diNo = req.params.diNo; 
+    con.then((con) => {
+        return con.query(sql,diNo) ;
+    }).then(rows => {
+        res.json(rows) ; 
+    });
+    
+} ) ;
+
 app.get('/api/users',(req, res, next)=>{
     var result = {};
     var paramObj = JSON.parse(req.query.user);
-    console.log("param=" + paramObj);
     var sql = 'SELECT userNo, userName, userId, userPwd from user_info where 1=1 '
     sql += generateWhere(paramObj);
-    console.log(sql);
     var values = generateWhereValue(paramObj);
-    console.log(values);
     connection.query(sql, values, (err, rows)=>{
         if(err) throw err;
-        console.log("rows=>" + rows);
         result["list"] = rows;
         res.json(result); // json 구조로 변경
         next();
     });
 })
 app.get('/api/users',(req,res,next)=>{
-    console.log(req.query.user);
 });
 
 app.get('/api/users2',(req, res, next)=>{
@@ -119,14 +208,12 @@ app.get('/api/users2',(req, res, next)=>{
     .then(rowsHandle)
     .catch(errorHandle)
     .then((result)=>{
-        console.log(result);
         res.json(result);
         next();
     });
 });
 
 app.get('/api/users2',(req, res, next)=>{
-    console.log('next!!');
 })
 
 app.get('/api/userhis/:userNo',(req, res, next)=>{
@@ -138,7 +225,6 @@ app.get('/api/userhis/:userNo',(req, res, next)=>{
     .then(rowsHandle)
     .catch(errorHandle)
     .then((result)=>{
-        console.log(result);
         res.json(result);
     });
 })
@@ -166,7 +252,6 @@ app.post('/api/users',(req,res,next)=>{
             return con.query(sql,values);
         })
     }).then((result)=>{
-        console.log(result);
         if(result.affectedRows==1){
             var sql = "select userNo, userName,userId,userPwd from user_info";
             return connection2(dbConfig).then((conn)=>{
@@ -179,7 +264,6 @@ app.post('/api/users',(req,res,next)=>{
     })
     .catch(errorHandle)
     .then((result)=>{
-        console.log(result);
         res.json(result);
     });
    
@@ -197,18 +281,15 @@ app.post('/api/users',(req, res, next)=>{
     valueSql = valueSql.substr(0, valueSql.length-1) + ")";
     sql += valueSql;
     connection2(dbConfig).then((conn)=>{
-        console.log(sql);
         return conn.query(sql, values);
     })
     .then(rowsHandle)
     .catch(errorHandle)
     .then((result)=>{
-        console.log(result);
     });
 })
 
 
 
 app.listen(app.get('port'), function() {
-    console.log('express running port : '+app.get('port'));
 });
