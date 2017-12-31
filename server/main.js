@@ -93,20 +93,51 @@ app.post('/api/departs' , (req,res, next) => {
     var sql ="insert into depart_info (diname, didesc, dicnt ) values (? , ?, ? )" ;
     var result = {} ; 
 
+
+    var dbCon ; 
+
     con.then((con) => { 
-        return con.query(sql, values) ;
+        dbCon = con ; 
+        return dbCon.query(sql, values) ;
+
     }).then(rows => {
 
         console.log(rows);
-       result["succeed"] = "ok"; 
+       result["succeed"] = "no"; 
 
 
-        if(rows.affectedRows != 1) {
-            result["succeed"] ="no";
+        if(rows.affectedRows == 1) {
+            var diNo = rows.insertId;
+            sql = "select ? as dino , count(1) as dicnt from user_info where dino= ? " ;  
+            result["succeed"] ="ok";
+            return dbCon.query(sql, [diNo , diNo]) ;
+        } else { 
+            
         }
 
-       res.json(result);
-    }) ; 
+    
+    }).then(rows => {
+        var result ;
+        
+        rows.map(row => {
+            console.log("row : " + row ) ;
+            sql = "update depart_info set dicnt = ? where diNo = ? " ;
+            result = dbCon.query(sql , [row.dicnt , row.dino ]);
+     
+        } );
+        return result; 
+    } ).then (rows => { 
+        if( rows.affectedRows == 1 ) {
+            result["succeed"] = "ok"; 
+            result["rows"] = rows ; 
+        }
+    }).catch( err => {
+
+        result["succeed"] = "no";
+    } ).then(data => {
+        res.json(result);
+    } );
+
     
 } ) ;
 
@@ -163,8 +194,11 @@ app.get('/api/departs' , (req,res, next) => {
     var sql = "select * from depart_info" ; 
     con.then((con) => {
         return con.query(sql) ;
-    }).then(rows => {
-        res.json(rows) ; 
+    }).then(rowsHandle).then( result => {
+
+        console.log(result);
+        console.log(result["list"]);
+        res.json(result) ; 
     });
     
 } ) ;
@@ -289,7 +323,117 @@ app.post('/api/users',(req, res, next)=>{
     });
 })
 
+app.get('/api/userdeparts' , (req , res , next ) => {
 
+ var sql = "    select userno as userNo  , ";
+           sql +="     username as userName, ";                 
+           sql +="     userage as userAge ,";
+           sql +="     userid as userId , ";
+           sql +="     userpwd as userPwd , ";
+           sql +="     useraddress as userAddress ,";
+           sql +="     ui.dino as diNo            ";
+           sql +="     from user_info ui , depart_info di ";
+           sql +="     where ui.dino = di.dino " ;
+
+ con.then((con) => { 
+     return  con.query(sql ) ;
+ })
+ .catch(errorHandle)
+ .then(rowsHandle)
+ .then(result => {
+
+    res.json( result );
+ }) ; 
+
+
+
+} );
+
+
+app.post('/api/userdeparts/update' , (req , res , next ) => {
+    var usr = req.body;
+    var sql ="update user_info set username = ? , userid = ? , dino = ? , userPwd = ? where userno = ? " ;
+
+    var result = {} ; 
+        
+    con.then((con) => { 
+        return  con.query(sql , [usr.userName , usr.userId, usr.diNo, usr.userPwd , usr.userNo] ) ;
+    }).catch(errorHandle).then( datas => {
+
+        result["succeed"] = "no" ; 
+        if( datas.affectedRows == 1 ) { 
+        
+            result["succeed"] ="ok";
+            res.json(result) ; 
+        }
+        
+        }
+    ); 
+} );
+
+app.post('/api/userdeparts/insert' , (req , res , next ) => {
+
+    var sql = "select 1 from user_info where userId=?";
+    var values = [req.body.userId];
+    con
+    .then((con)=>{
+        return con.query(sql,values);
+    })
+    .then((result)=>{
+        console.log(result.length);
+        if(result.length>0){
+            throw {"code":"중복에러","errno":1,"sqlMessage":req.body.userId+" 중복된 아이디"};
+        }
+        return true;
+    }).then(()=>{
+        sql = "insert into user_info (";
+        sql += "userId, userName, userPwd , userAge , dino )";
+        sql += "values(?,?,?,?,?)";
+        var pm = req.body;
+        var values = [pm.userId, pm.userName, pm.userPwd ,"11" ,  pm.diNo ];
+        console.log("body : " + values) ;
+        return con.then((con) =>  {return con.query(sql,values) }) ;
+    }).catch(errorHandle).then(result =>{
+        console.log(result);
+        if(result.affectedRows==1){
+            // 정상
+            // depart update 
+         //   let insertedUserNo = result.insertId ; 
+
+
+            sql = "" ;
+
+            result["succeed"] = "ok" ;
+        }else{
+            throw {"code":"몰름","errno":2,"sqlMessage":"error"};
+        }
+
+        res.json(result);
+    }) ;
+ 
+    
+   
+} );
+
+app.delete('/api/userdeparts/:userno' , (req , res , next ) => {
+     console.log("req.params.userno : "  + req.params.userno ) ;
+    var sql = "delete from user_info where userno = ? " ; 
+    var userNo =  req.params.userno  ;
+    var result = {} ; 
+    con.then(con => { 
+        return con.query(sql,userNo  ) ; 
+    } ).catch(errorHandle).then(datas => {
+
+        result["succeed"] = "no" ; 
+        if( datas.affectedRows == 1 ) { 
+        
+            result["succeed"] ="ok";
+            res.json(result) ; 
+        }
+        
+
+    } ) ;
+} );
 
 app.listen(app.get('port'), function() {
 });
