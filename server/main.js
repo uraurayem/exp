@@ -64,9 +64,9 @@ app.use(morgan('dev'));
 
 
 app.use(header);
+app.use('/api/userdeparts' , userController ) ;
 app.use('/api/menus', menuController ) ;
 app.use('/api/departs' , departController ) ;
-app.use('/api/userdeparts' , userController ) ;
 
 /*    ---------------------------------------------------------------------------------------------      */
 
