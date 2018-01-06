@@ -435,5 +435,18 @@ app.delete('/api/userdeparts/:userno' , (req , res , next ) => {
     } ) ;
 } );
 
+/* menu */
+app.get('/api/menus' , (req, res, next) => {
+
+    var sql = "select * from menu order by sort" ;
+    con.then((con) => {
+        return con.query(sql) ;
+    } ).then(rows => {
+        console.log(rows);
+        res.json(rows);
+    });
+
+} ) ;
+
 app.listen(app.get('port'), function() {
 });
